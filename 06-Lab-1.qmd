@@ -16,18 +16,30 @@ Enter your answers below each question in the `.qmd` file. The number in parenth
 
 Write code to get the tornado data (from file `Tornadoes.csv` in the directory `data`) into your R environment as a data frame called `Torn.df` (4)
 
+> L <- "http://www.spc.noaa.gov/wcm/data/1950-2021_actual_tornadoes.csv"
+Torn.df <- L |>
+  readr::read_csv()
+  
 ## 2
 
 Write code to get the average tornado path length. The path length variable is `len` in `Torn.df` from question 1 (4)
+> Torn.df$len |>
++ mean()
+[1] 3.47834
 
 ## 3
 
 Write code to create a new data frame from `Torn.df` containing only tornadoes with damage rating (`mag`) greater or equal to 4 (4)
+> Torn.mag4 <- Torn.df[Torn.df$mag >= 4, ]
 
 ## 4
 
 Write code to make the functions from the {ggplot2} package available to your current R session (4)
+> #| echo: true
+> install.packages(pkgs = "ggplot2",
++repos = "https://cloud.r-project.org")
 
 ## 5
 
 Type your answers below to the following questions: According to the PBS video entitled "What is the riskiest region in the US as the climate changes?" (linked in the file `05-working-with-data.qmd`), what state has the county with the highest overall risk resulting from climate change? What is the name of the county? (2)
+According to the study cited in the video, the county most at risk for climate change impacts in the U.S. is Beaufort County, South Carolina. The riskiest regions in general are the southeast- specifically the gulf coast- and southern California/ Arizona.
