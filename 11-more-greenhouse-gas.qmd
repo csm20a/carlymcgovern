@@ -1,5 +1,5 @@
 ---
-title: "More greenhouse gas"
+title: "Increasing greenhouse gases"
 format: 
   revealjs:
     code-fold: false
@@ -83,9 +83,7 @@ ggplot(data = ch4.df,
 ## {hockeystick} package
 
 -   The package *hockeystick* has functions that make climate data easily available to you
-
 -   You can download the latest raw data from authoritative sources as well as view it with pre-defined charts
-
 -   The name of the package stems from the well-known [hockey stick](https://en.wikipedia.org/wiki/Hockey_stick_graph) temperature chart
 
 ```{r}
@@ -96,7 +94,7 @@ install.packages("hockeystick",
 
 ## Get the lastest CO~2~ data
 
-Download the CO~2~ data using the `get_carbon()` function from the {hockeystick} package. The data are atmospheric CO~2~ measurements at Mauna Loa Observatory, Hawaii
+-   Download the CO~2~ data using the `get_carbon()` function from the {hockeystick} package. The data are atmospheric CO~2~ measurements at Mauna Loa Observatory, Hawaii
 
 ```{r}
 #| echo: true
@@ -178,7 +176,10 @@ emits.df |>
   hockeystick::plot_emissions()
 ```
 
-## By country/region in 2020
+## 
+
+-   Total CO~2 emission by country/region in 2020
+
 ```{r}
 #| echo: true
 emits.df |>
@@ -188,3 +189,16 @@ emits.df |>
 ```
 
 China, United States, India, Russia, Japan, Iran, Germany, Saudi Arabia, South Korea, Indonesia, Canada, Brazil, South Africa, Turkey, Australia, United Kingdom, Italy, Poland, Kazakhstan, France, Taiwan, Malaysia
+
+
+## 
+
+-   Total CO~2 per person by country/region in 2020
+
+```{r}
+#| echo: true
+emits.df |>
+  dplyr::filter(year == 2020) |>
+  dplyr::select(country, co2, co2_per_capita) |>
+  dplyr::arrange(desc(co2_per_capita))
+```

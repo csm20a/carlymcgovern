@@ -9,10 +9,17 @@ format:
 editor: source
 ---
 
-## {.smaller}
+## 
+
+-   Reliable resources for weather and climate data
+-   Quantify changes in extremes
+-   Humidity
+-   Early storm chase video
+
+## Reliable resources for weather and climate data {.smaller}
 
 -   [Today's weather](https://climatereanalyzer.org/wx/todays-weather/)
--   [Tropical weather resources](https://www.tropicaltidbits.com/analysis/models/)
+-   [Weather models](https://www.tropicaltidbits.com/analysis/models/)
 -   [Climate change indicators](https://zacklabe.com/climate-change-indicators/)
 -   [Tracking the changing climate with Earth observations](https://climate.metoffice.cloud/)
 -   [International Best Track Archive for Climate Stewardship (IBTrACS)](https://www.ncei.noaa.gov/products/international-best-track-archive)
@@ -21,67 +28,85 @@ editor: source
 
 ##
 
--   Data science legacy
--   Prior to the data science movement of the last 15 years, it was seen as inappropriate for people “in the business” to write code
+-   The data science revolution is the increasing importance and widespread adoption of data-driven decision-making
+-   It is a result of massive amounts of data generated and collected by businesses, organizations, and individuals
+-   And advancements in computing power, storage, and algorithms enabling the processing and analysis of these data
+-   Data science is the use of techniques to extract insights and knowledge from data, and to inform and optimize decision-making processes
+-   It draws on statistics, computer science, mathematics, and domain-specific knowledge, and makes use of machine learning, data mining, and visualization
+
+##
+
+-   It has transformed finance, healthcare, retail, and marketing 
+-   It has enabled businesses to gain a deeper understanding of their customers, optimize their operations, and develop new products and services
+-   It has opened up new opportunities for research and innovation in areas from climate science to social science
+-   Before the revolution it was seen as inappropriate for people “in the business” to write code
 -   Code was a black art reserved for specially trained wizards in information technology development teams
 -   Now in most organizations it’s normal to run R or Python in the business
 
-## 
+## Quantify changes in extremes
 
--   Water makes Earth special
+-   Rain data from NW Florida
+
+```{r warning=FALSE, message=FALSE}
+#| echo: true
+Rain.df <- readr::read_table(here::here("data", "NWFL_MonthlyRain.txt")) |>
+  dplyr::select(Year, Jun) |>
+  dplyr::mutate(Rain_cm = Jun * 2.54)
+```
+
+##
+
+-   Trend line showing changes to the average monthly rain amount
+
+```{r warning=FALSE, message=FALSE}
+#| echo: true
+library(ggplot2)
+
+ggplot(data = Rain.df,
+       mapping = aes(x = Year, y = Rain_cm)) +
+  geom_line() +
+  geom_smooth(method = lm)
+```
+##
+
+-   Increasing extremes
+
+```{r warning=FALSE, message=FALSE}
+#| echo: true
+ggplot(data = Rain.df,
+       mapping = aes(x = Year, y = Rain_cm)) +
+  geom_line() +
+  geom_quantile(quantiles = c(.25, .5, .75, .95))
+```
+
+-   Air can hold an additional 7% more water vapor for every one degree C increase in temperature
+
+## Humidity
+
+-   Water is special
 -   Water exists in all three phases on Earth
 -   Relative vs absolute humidity
--   Saturation
+
+{{< video https://www.youtube.com/embed/wB3Yyq4xy_Y >}} 3 minutes
+
+## {.smaller}
+
+-   Relative humidity and dew point temperature are measures of the amount of moisture in the air, but they represent different aspects of that moisture
+-   Relative humidity is a measure of how much moisture is in the air relative to the maximum amount it could hold at that temperature
+    -   Expressed as a percentage indicating how close the air is to being saturated with moisture
+    -   If the relative humidity is 50%, the air is holding half of the maximum amount of moisture it could hold at that temperature
+    
+##
+
+-   Dew point temperature, on the other hand, is the temperature at which the air would become saturated with moisture, causing dew to form
+    -   It is a measure of the actual amount of moisture in the air, regardless of the temperature
+-   When the dew point temperature and the air temperature are close, the air is close to being saturated and the relative humidity is high
+-   When the dew point temperature and air temperature are far apart, the air is relatively dry and the relative humidity is low
 
 ## 
 
 -   Global humidity data <https://climate.metoffice.cloud/humidity.html#datasets>
--   Specific humidity (q in g/kg)
-
-```{r}
-#| echo: true
-L <- "https://climate.metoffice.cloud/formatted_data/humidity_q_HadISDH%20blend%20q.csv"
-download.file(url = L,
-              destfile = here::here("data", "q.csv"))
-
-q.df <- readr::read_csv(here::here("data", "q.csv"),
-                        show_col_types = FALSE)
-names(q.df) <- c("Year", "q_gpkg", "u")
-
-q.df |>
-  head()
-```
-
-## 
-
-```{r}
-#| echo: true
-library(ggplot2)
-
-q.df |>
-ggplot(mapping = aes(x = Year, y = q_gpkg)) +
-  geom_line() +
-  geom_smooth(method = lm, se = FALSE) +
-  scale_x_continuous(breaks = seq(1980, 2020, 10)) +
-  ylab("g/kg")
-```
-
-## 
-
--   The slope of the blue line is the average increase in specific humidity over the years
--   You quantify this change using the following code
-
-```{r}
-#| echo: true
-lm(q_gpkg ~ Year, data = q.df)
-```
-
--   The value below `Year` is the increase in specific humidity in g/kg per year
--   +.008 g/kg per year
-
-## 
-
--   Relative humidity
+-   Relative humidity data 
 
 ```{r}
 #| echo: TRUE
@@ -96,10 +121,11 @@ RH.df |>
   head()
 ```
 
-## 
+##
 
 ```{r}
 #| echo: true
+
 RH.df |>
 ggplot(mapping = aes(x = Year, y = RH_p)) +
   geom_line() +
@@ -124,7 +150,7 @@ lm(RH_p ~ Year, data = RH.df)
 
 ## 
 
--   Dew point temperature
+-   Dew point temperature data
 
 ```{r}
 #| echo: TRUE
@@ -166,6 +192,50 @@ lm(Td_C ~ Year, data = Td.df)
 
 ## 
 
+-   Specific humidity (g/kg) data
+
+```{r}
+#| echo: true
+L <- "https://climate.metoffice.cloud/formatted_data/humidity_q_HadISDH%20blend%20q.csv"
+download.file(url = L,
+              destfile = here::here("data", "q.csv"))
+
+q.df <- readr::read_csv(here::here("data", "q.csv"),
+                        show_col_types = FALSE)
+names(q.df) <- c("Year", "q_gpkg", "u")
+
+q.df |>
+  head()
+```
+
+## 
+
+```{r}
+#| echo: true
+
+q.df |>
+ggplot(mapping = aes(x = Year, y = q_gpkg)) +
+  geom_line() +
+  geom_smooth(method = lm, se = FALSE) +
+  scale_x_continuous(breaks = seq(1980, 2020, 10)) +
+  ylab("g/kg")
+```
+
+## 
+
+-   The slope of the blue line is the average increase in specific humidity over the years
+-   You quantify this change using the following code
+
+```{r}
+#| echo: true
+lm(q_gpkg ~ Year, data = q.df)
+```
+
+-   The value below `Year` is the increase in specific humidity in g/kg per year
+-   +.008 g/kg per year
+
+## 
+
 -   The relationship between humidity and temperature
 -   Get the temperature data
 
@@ -192,9 +262,14 @@ dplyr::left_join(q.df, T.df, by = "Year") |>
   geom_smooth(method = lm)
 ```
 
+##
+
+-   Storm chasing with my kids in 2008
+
+<https://www.dropbox.com/s/qdr9849tjpn6mv6/May23_2008_StormChase2.mov?dl=0>
+
 ## 
 
 -   A tornado season forecast for 2023
 
 {{< video https://www.youtube.com/embed/5kVeEf7CtCE >}} 8 minutes
-
