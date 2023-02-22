@@ -1,5 +1,5 @@
 ---
-title: "Rising global temperature"
+title: "Increasing temperature, rising seas, melting ice"
 format: 
   revealjs:
     slide-number: c/t
@@ -10,28 +10,31 @@ format:
 editor: source
 ---
 
-## Get the temperature data
+## 
 
-Download the temperature data using the `get_temp()` function from the {hockeystick} package.
+-   Temperature changes across time
+-   The climate stripes and hockey stick graphs
+-   Rising seas and melting ice
+-   Local temperature changes
+-   Lapse rates of temperature
+-   Today's winds <https://weather.rap.ucar.edu/surface/>
+
+##  {.smaller}
+
+-   Get the global average temperature data by month using the `get_temp()` function from the {hockeystick} package
 
 ```{r}
 #| echo: true
 library(hockeystick)
 
-t.df <- hockeystick::get_temp(write_cache = TRUE)
+t.df <- get_temp()
+
+t.df
 ```
 
-##
+## 
 
-Look at the first six rows using the `head()` function.
-
-```{r}
-#| echo: true
-t.df |>
-  head()
-```
-
-## Make a time-series plot
+-   Make a time-series plot
 
 ```{r}
 #| echo: true
@@ -40,14 +43,22 @@ t.df |>
   plot_temp()
 ```
 
-##
+## 
+
+-   Plot the time-series as stripes (warming stripes)
 
 ```{r}
+#| echo: true
 t.df |>
   warming_stripes()
 ```
 
-## Convert wide data to long data
+-   International symbol of global warming (Dr. Ed Hawkins) {{< video https://www.youtube.com/embed/3VIHRLUnVOI >}} 3 minutes
+
+##  {.smaller}
+
+-   Convert the wide data frame to a long data frame
+
 ```{r}
 #| echo: true
 t.dfL <- t.df |>
@@ -58,11 +69,13 @@ t.dfL <- t.df |>
   dplyr::mutate(Year = lubridate::year(Year),
                 Month = factor(Month, 
                                levels = month.abb))
-
-head(t.dfL)
+t.dfL
 ```
 
-## Plot temperatures by month
+## 
+
+-   Plot temperature trends by month since 1980
+
 ```{r}
 #| echo: true
 library(ggplot2)
@@ -72,24 +85,24 @@ t.dfL |>
   dplyr::filter(Year >= 1980) |>
   ggplot(mapping = aes(x = Year, 
                        y = Anom_C)) +
-#  geom_line() +
+  geom_line() +
   geom_smooth(method = lm, color = "red") +
   facet_wrap(~ Month, ncol = 4)
 ```
 
-## Common era temperatures
+## 
+
+-   Get a temperature index since the birth of Christ (Common Era)
+-   Combined modeled, instrumental, and proxy data
 
 ```{r}
 #| echo: true
-library(hockeystick)
-
 anomaly2k <- get_temp2k()
 
-anomaly2k |>
-  head()
+anomaly2k 
 ```
 
-##
+## 
 
 ```{r}
 #| echo: true
@@ -97,6 +110,242 @@ anomaly2k |>
   plot_temp2k()
 ```
 
+## 
+
+-   Warming and emissions (Dr. Jennifer Francis) {{< video https://www.youtube.com/embed/JKrkiZM1asQ >}} 5 minutes
+-   The hockey stick graph (Simon Clark) {{< video https://www.youtube.com/embed/CqtZdnpfgIc >}} 9 minutes
+
+## 
+
+-   Get the sea level data using the `get_sealevel()` function from the {hockeystick} package
+
+```{r}
+#| echo: true
+gmsl <- get_sealevel()
+
+gmsl
+```
+
+## 
+
+-   Make a time-series plot
+
+```{r}
+#| echo: true
+gmsl |>
+  plot_sealevel()
+```
+
+##  {.smaller}
+
+-   Get the sea ice data using the `get_seaice()` function from the {hockeystick} package
+-   Sea ice extent in millions of square kilometers every July 31 since 1979
+
+```{r}
+#| echo: true
+seaice <- get_seaice() 
+
+seaice 
+```
+
+## 
+
+-   Make a time-series plot
+
+```{r}
+#| echo: true
+seaice |>
+  plot_seaice()
+```
+
+## 
+
+-   Quantify the loss of sea ice in square kilometers per year
+
+```{r}
+#| echo: true
+seaice <- seaice |>
+  dplyr::mutate(Year = lubridate::year(date),
+                Extent_km2 = extent * 10^6)
+
+lm(Extent_km2 ~ Year, data = seaice)
+```
+
+-   A loss of more than 68 thousand square kilometers per year
+
 ##
 
-{{< video https://www.youtube.com/embed/JKrkiZM1asQ >}} 5 minutes
+-   Paleo ice core
+
+```{r}
+#| echo: true
+vostok <- get_paleo()
+
+vostok |>
+  plot_paleo()
+```
+
+## 
+
+-   All together
+
+```{r}
+#| echo: true
+climate_grid()
+```
+
+##  {.smaller}
+
+-   Regional warming
+-   Is Tallahassee getting warmer?
+-   Get the daily high temperature from the official airport site since 1940
+
+```{r, message=FALSE}
+#| echo: true
+L <- "http://myweb.fsu.edu/jelsner/temp/data/TLH_Daily1940-2020.csv"
+TLH_Daily.df <- readr::read_csv(L) |>
+  dplyr::mutate(Year = lubridate::year(DATE)) |>
+  dplyr::filter(Year >= 1969 & Year < 2021)
+
+TLH_Daily.df
+```
+
+##  {.smaller}
+
+-   Graph the annual average temperature
+
+```{r, message=FALSE}
+#| echo: true
+TLH_Annual.df <- TLH_Daily.df |>
+  dplyr::group_by(Year) |>
+  dplyr::summarize(AvgT = mean(TMAX, na.rm = TRUE))
+
+ggplot(data = TLH_Annual.df,
+       mapping = aes(x = Year, y = AvgT)) +
+  geom_point() +
+  geom_line() +
+  geom_smooth(method = lm)
+```
+
+## 
+
+-   Quantify the change
+
+```{r}
+#| echo: true
+lm(AvgT ~ Year, data = TLH_Annual.df)
+```
+
+##  {.smaller}
+
+-   Is Las Vegas getting warmer?
+-   Get the daily high temperature from the official airport site since 1969
+
+```{r, message=FALSE}
+#| echo: true
+L <- "http://myweb.fsu.edu/jelsner/temp/data/LVG_Daily1940-2020.csv"
+LVG_Daily.df <- readr::read_csv(L) |>
+  dplyr::mutate(DATE = readr::parse_datetime(DATE, "%m/%d/%y")) |>
+  dplyr::mutate(Year = lubridate::year(DATE)) |>
+  dplyr::filter(Year >= 1969 & Year < 2021)
+
+LVG_Daily.df
+```
+
+##  {.smaller}
+
+-   Graph the annual average temperature
+
+```{r, message=FALSE}
+#| echo: true
+LVG_Annual.df <- LVG_Daily.df |>
+  dplyr::group_by(Year) |>
+  dplyr::summarize(AvgT = mean(TMAX, na.rm = TRUE))
+
+ggplot(data = LVG_Annual.df,
+       mapping = aes(x = Year, y = AvgT)) +
+    geom_point() +
+    geom_line() +
+    geom_smooth(method = lm)
+```
+
+## 
+
+-   Quantify the change
+
+```{r}
+#| echo: true
+lm(AvgT ~ Year, data = LVG_Annual.df)
+```
+
+##  {.smaller}
+
+-   Is the frequency of extremely hot days increasing?
+-   Here you define a hot day as one in which the high temperatures reaches 100°F
+
+```{r, message=FALSE}
+#| echo: true
+library(MASS)
+
+TLH_Daily.df |>
+  dplyr::group_by(Year) |>
+  dplyr::summarize(N100 = sum(TMAX >= 100, na.rm = TRUE)) |>
+ggplot(mapping = aes(x = Year, y = N100)) +
+  geom_col() +
+  geom_smooth(method = "glm.nb", col = "orange") +
+  ylab("Number of days in Tallahassee at or exceeding 100°F")
+```
+
+##  {.smaller}
+
+-   Compare the frequency of daily high temperatures between Tallahassee and Las Vegas
+
+```{r, message=FALSE}
+#| echo: true
+( TLH.p <- TLH_Daily.df |>
+  dplyr::group_by(TMAX) |>
+  dplyr::summarize(nH = dplyr::n()) |>
+ggplot(mapping = aes(x = TMAX, y = nH)) +
+  geom_col(col = 'white', fill = "gray70") +
+  labs(title = "Frequency of Daily High Temperatures",
+       subtitle = "Tallahassee, FL, USA (1969-2020)",
+       x = "Daily High Temperature (°F)",
+       y = "Number of Days") +
+ scale_x_continuous(breaks = seq(from = 20, to = 110, by = 10)) +
+ theme_minimal() )
+```
+
+##  {.smaller}
+
+```{r, message=FALSE}
+#| echo: true
+( LVG.p <- LVG_Daily.df |>
+  dplyr::group_by(TMAX) |>
+  dplyr::summarize(nH = dplyr::n()) |>
+ggplot(mapping = aes(x = TMAX, y = nH)) +
+  geom_col(col = 'white', fill = "gray70") +
+  labs(title = "Frequency of Daily High Temperatures",
+       subtitle = "Las Vegas, NV, USA (1969-2020)",
+       x = "Daily High Temperature (°F)",
+       y = "Number of Days") +
+ scale_x_continuous(breaks = seq(from = 20, to = 110, by = 10)) +
+ theme_minimal() )
+```
+
+## 
+
+-   Plot together
+
+```{r}
+#| echo: true
+library(patchwork)
+
+TLH.p / LVG.p
+```
+
+-   Why the difference?
+
+## 
+
+-   Lapse rate of temperature
+-   Parcel theory (dry vs moist lapse rates)

@@ -11,34 +11,34 @@ editor: source
 
 ## 
 
--   Reliable resources for weather and climate data
--   Quantify changes in extremes
--   Humidity
--   Early storm chase video
+-   Linking to reliable sources for weather and climate data
+-   Increasing importance of data science
+-   Quantifying changes in extremes
+-   Defining humidity and working with humidity data
+-   Chasing storms with my kids (15 years ago)
 
 ## Reliable resources for weather and climate data {.smaller}
 
 -   [Today's weather](https://climatereanalyzer.org/wx/todays-weather/)
--   [Weather models](https://www.tropicaltidbits.com/analysis/models/)
+-   [Weather forecast models](https://www.tropicaltidbits.com/analysis/models/)
 -   [Climate change indicators](https://zacklabe.com/climate-change-indicators/)
--   [Tracking the changing climate with Earth observations](https://climate.metoffice.cloud/)
--   [International Best Track Archive for Climate Stewardship (IBTrACS)](https://www.ncei.noaa.gov/products/international-best-track-archive)
--   [NOAA NWS Storm Prediction Center](https://www.spc.noaa.gov/)
+-   [Global tropical cyclone data](https://www.ncei.noaa.gov/products/international-best-track-archive)
+-   [U.S. tornado data](https://www.spc.noaa.gov/)
 -   [Global reanalysis data](https://cds.climate.copernicus.eu/cdsapp#!/dataset/reanalysis-era5-single-levels-monthly-means?tab=overview)
 
 ##
 
--   The data science revolution is the increasing importance and widespread adoption of data-driven decision-making
+-   Data science revolution: increasing importance and use of data-driven decision-making
 -   It is a result of massive amounts of data generated and collected by businesses, organizations, and individuals
--   And advancements in computing power, storage, and algorithms enabling the processing and analysis of these data
--   Data science is the use of techniques to extract insights and knowledge from data, and to inform and optimize decision-making processes
+-   And advancements in computing power, storage, and algorithms for the analysis of these data
+-   Data science is the use of ways to extract insights and knowledge from data, and to inform and optimize decision-making processes
 -   It draws on statistics, computer science, mathematics, and domain-specific knowledge, and makes use of machine learning, data mining, and visualization
 
 ##
 
--   It has transformed finance, healthcare, retail, and marketing 
--   It has enabled businesses to gain a deeper understanding of their customers, optimize their operations, and develop new products and services
--   It has opened up new opportunities for research and innovation in areas from climate science to social science
+-   Transforms finance, healthcare, retail, and marketing 
+-   Enables businesses to gain a deep understanding of their customers, optimize operations, and develop new products and services
+-   Opens new opportunities for research and innovation from climate science to social science
 -   Before the revolution it was seen as inappropriate for people “in the business” to write code
 -   Code was a black art reserved for specially trained wizards in information technology development teams
 -   Now in most organizations it’s normal to run R or Python in the business
@@ -69,7 +69,17 @@ ggplot(data = Rain.df,
 ```
 ##
 
--   Increasing extremes
+-   Quantifying the change in the _average_ rain
+
+```{r}
+#| echo: true
+lm(Rain_cm ~ Year, data = Rain.df)
+```
+-   2.3 cm per 100 years (about 1 inch)
+
+##
+
+-   Plotting the increasing extremes
 
 ```{r warning=FALSE, message=FALSE}
 #| echo: true
@@ -81,40 +91,53 @@ ggplot(data = Rain.df,
 
 -   Air can hold an additional 7% more water vapor for every one degree C increase in temperature
 
+##
+
+-   Quantifying the increasing extremes with quantile regression
+
+```{r, message=FALSE}
+#| echo: true
+library(quantreg)
+
+rq(Rain_cm ~ Year, data = Rain.df,
+   tau = c(.25, .5, .75, .95))
+```
+
 ## Humidity
 
 -   Water is special
--   Water exists in all three phases on Earth
+-   It exists in all three phases
 -   Relative vs absolute humidity
 
 {{< video https://www.youtube.com/embed/wB3Yyq4xy_Y >}} 3 minutes
 
-## {.smaller}
+##
 
--   Relative humidity and dew point temperature are measures of the amount of moisture in the air, but they represent different aspects of that moisture
--   Relative humidity is a measure of how much moisture is in the air relative to the maximum amount it could hold at that temperature
+-   Relative humidity and dew point temperature measure how much moisture is in the air, but they represent different aspects of that moisture
+-   Relative humidity is a measure of how much moisture is in the air _relative_ to the maximum amount it could hold at that temperature
     -   Expressed as a percentage indicating how close the air is to being saturated with moisture
     -   If the relative humidity is 50%, the air is holding half of the maximum amount of moisture it could hold at that temperature
     
 ##
 
 -   Dew point temperature, on the other hand, is the temperature at which the air would become saturated with moisture, causing dew to form
-    -   It is a measure of the actual amount of moisture in the air, regardless of the temperature
--   When the dew point temperature and the air temperature are close, the air is close to being saturated and the relative humidity is high
+    -   It is a measure of the _actual_ amount of moisture in the air, regardless of the temperature
+    -   High values of dew point temperature indicate high amounts of moisture
+-   When the dew point temperature and the air temperature are close, the air is near saturation and relative humidity is high
 -   When the dew point temperature and air temperature are far apart, the air is relatively dry and the relative humidity is low
 
 ## 
 
--   Global humidity data <https://climate.metoffice.cloud/humidity.html#datasets>
+-   Global humidity <https://climate.metoffice.cloud/humidity.html#datasets>
 -   Relative humidity data 
 
-```{r}
+```{r, message=FALSE}
 #| echo: TRUE
-download.file(url = "https://climate.metoffice.cloud/formatted_data/humidity_RH_HadISDH%20blend%20RH.csv",
+L <- "https://climate.metoffice.cloud/formatted_data/humidity_RH_HadISDH%20blend%20RH.csv"
+download.file(url = L,
               destfile = here::here("data", "RH.csv"))
 
-RH.df <- readr::read_csv(here::here("data", "RH.csv"),
-                        show_col_types = FALSE)
+RH.df <- readr::read_csv(here::here("data", "RH.csv"))
 names(RH.df) <- c("Year", "RH_p", "u")
 
 RH.df |>
@@ -131,6 +154,7 @@ ggplot(mapping = aes(x = Year, y = RH_p)) +
   geom_line() +
   geom_smooth(method = lm, se = FALSE) +
   scale_x_continuous(breaks = seq(1980, 2020, 10)) +
+  ggtitle(label = "Decreasing relative humidity") +
   ylab("%")
 ```
 
@@ -145,20 +169,20 @@ lm(RH_p ~ Year, data = RH.df)
 ```
 
 -   The value below `Year` is the decrease in relative humidity in percentage points per year
--   -1.3 percentage points per 100 years
+-   -1.4 percentage points per 100 years
 -   Why the decrease?
 
 ## 
 
 -   Dew point temperature data
 
-```{r}
+```{r, message=FALSE}
 #| echo: TRUE
-download.file(url = "https://climate.metoffice.cloud/formatted_data/humidity_Td_HadISDH%20blend%20Td.csv",
+L <- "https://climate.metoffice.cloud/formatted_data/humidity_Td_HadISDH%20blend%20Td.csv"
+download.file(url = L,
               destfile = here::here("data", "Td.csv"))
 
-Td.df <- readr::read_csv(here::here("data", "Td.csv"),
-                        show_col_types = FALSE)
+Td.df <- readr::read_csv(here::here("data", "Td.csv"))
 names(Td.df) <- c("Year", "Td_C", "u")
 
 Td.df |>
@@ -174,6 +198,7 @@ ggplot(mapping = aes(x = Year, y = Td_C)) +
   geom_line() +
   geom_smooth(method = lm, se = FALSE) +
   scale_x_continuous(breaks = seq(1980, 2020, 10)) +
+  ggtitle(label = "Increasing dew point temperature") +
   ylab("°C")
 ```
 
@@ -253,6 +278,7 @@ names(T.df) <- c("Year", "T_C", "u")
 ## 
 
 -   Join the temperature data to the humidity data
+-   Draw a scatter plot
 
 ```{r}
 #| echo: true
