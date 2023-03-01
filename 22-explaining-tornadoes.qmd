@@ -1,11 +1,20 @@
 ---
-title: "Tornado formation"
+title: "Explaining tornadoes"
 format:
   revealjs:
     slide-number: c/t
     code-fold: false
     chalkboard: true
+    theme: white
+    footer: "GEO4251 Climate Change & Storms"
+editor: source
 ---
+
+##
+
+-   <http://coolwx.com/record/>
+-   lapse rates on SkewT-logP charts from <https://www.tropicaltidbits.com/>
+
 
 ## Formation and structure
 
@@ -14,6 +23,8 @@ format:
 {{< video https://www.youtube.com/embed/wUNAXGSWVv4 >}} 30 minutes Lots of information Full lecture
 
 {{< video https://www.youtube.com/embed/uH9A-7Y3lL0 >}} Supercell morphology (Pecos Hank) 7 minutes
+
+{{< video https://www.youtube.com/embed/EnSIkaIECMiOmarE >}} Pecos Hank interview (lightning) 28 minutes
 
 {{< video https://www.youtube.com/embed/bq0-QXXtOro >}} Storm spotting secrets 45 minutes
 
