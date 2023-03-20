@@ -10,43 +10,55 @@ editor_options:
   chunk_output_type: console
 ---
 
-## Hurricane season maps
+## 
 
-![Map showing the tracks and intensities of all the tropical cyclones over the North Atlantic basin during a hurricane season](https://www.nhc.noaa.gov/data/tracks/tracks-at-1950.png)
+-   Hurricane frequency
+-   How many storms? Are they becoming more common?
+-   Count data vs measured data
+-   Analyzing and modeling hurricane frequency
+-   No class this Wednesday (March 22)
+-   Lab 4 next Monday (March 27)
 
-## Topics
+## 
 
--   Changing frequency of hurricanes
--   Changing location
--   Stronger hurricanes
--   Getting stronger faster
--   Costlier hurricanes
+-   Hurricane season maps
 
-## Data on past hurricanes
+![Map showing the tracks and intensities of all the tropical cyclones over the North Atlantic basin during the 1950 hurricane season](https://www.nhc.noaa.gov/data/tracks/tracks-at-1950.png)
 
--    Where can you find data on hurricanes?
--    How can you get the data into a format that is easy to work with?
+##
 
-<https://www.nhc.noaa.gov/data/>
-<https://www.aoml.noaa.gov/hrd/hurdat/Data_Storm.html>
+-   Where can you find data on past Atlantic hurricanes?
+    - <https://www.nhc.noaa.gov/data/>
+    - <https://www.aoml.noaa.gov/hrd/hurdat/Data_Storm.html>
 
-## Annual basin-wide counts
+## {.smaller}
 
 -   The file `NATL_Counts.txt` in the folder `data` contains annual counts of tropical storms, hurricanes, and major hurricanes across the North Atlantic basin back to 1851
--   Click on it
--   Get the data into R
+-   Click on it. Get these data into your current R session
 
-```{r}
-Counts.df <- readr::read_table(file = here::here("data", "NATL_Counts.txt"),
-                               show_col_types = FALSE)
+```{r, message=FALSE}
+#| echo: true
+Counts.df <- readr::read_table(file = here::here("data", "NATL_Counts.txt"))
 
 Counts.df |>
   head()
 ```
 
-##  {.smaller}
+-   `TS` number of tropical storms (wind of at least 17 m/s, 33 kt, 40 mph)
+-   `H` number of hurricanes (wind of at least 33 m/s, 64 kt, 75 mph)
+-   `MH` number of major hurricanes (wind of at least 50 m/s, 97 kt, 111 mph)
+-   wind refer to the maximum sustained (1 minute) at a height of 10 m above the surface (land or ocean)
 
--   Count data is different than measured data, especially when the counts are close to zero
+## 
+
+-   Write code to determine the average number of major hurricanes per year
+-   Write code to determine what year had the most hurricanes
+
+## {.smaller}
+
+-   Count data is different than measured data
+-   Annual average number of hurricanes vs annual average temperature
+-   Write code to list the hurricane counts
 
 ```{r}
 #| echo: true
@@ -54,9 +66,10 @@ Counts.df |>
   dplyr::pull(H)
 ```
 
---   Large variations from one year to the next
+-   Big swings from one year to the next
 
--   You can use the `table()` function on count data
+## 
+-   Use the `table()` function on the hurricane counts to get the distribution of counts by year
 
 ```{r}
 #| echo: true
@@ -65,11 +78,12 @@ Counts.df |>
   table()
 ```
 
--- What count is most common? What is the average count? What is the variance?
+-   How do you interpret this output?
+-   What count is most common? How many years without a hurricane? How many years had at least 12 hurricanes?
 
 ##
-
--   Summary statistics
+-   What is the average count? What is the variance in the counts? What is the ratio of the variance in the the counts to the average count?
+-   These questions are answered with the following code
 
 ```{r}
 #| echo: true
@@ -80,11 +94,12 @@ Counts.df |>
                    Ratio = Var/Avg)
 ```
 
---    Observations versus statistics
+-   Observations versus statistics
+-   Descriptive versus inferential statistics
 
-##
+## {.smaller}
 
--   The distribution of _observed_ counts
+-   Create a graph displaying the distribution of counts
 
 ```{r}
 #| echo: true
@@ -96,9 +111,21 @@ ggplot(data = Counts.df,
   scale_x_continuous(breaks = 0:15)
 ```
 
+-   Right skewed and bounded on the left by zero
+-   Compare with distribution of daily high temperatures in Tallahassee
+
 ## {.smaller}
 
--   A set of 172 counts having the same average as the hurricane counts
+-   Random number generator
+-   172 random values from a normal distribution with a average of 180 and a standard deviation of 15
+
+```{r}
+rnorm(n = 172, mean = 180, sd = 15)
+```
+
+## {.smaller}
+
+-   172 random counts from a Poisson distribution with an average equal to the average annual number of hurricanes
 
 ```{r}
 #| echo: true
@@ -111,12 +138,14 @@ H1 |>
   table()
 ```
 
--   A proposed model for the counts
+-   A model for the counts
+-   Uncertainty: aleatory and epistemic
 
 ##
 
--   The actual counts are a bit unusual relative to the modeled counts in two ways
+-   The observed counts are a bit unusual relative to the modeled counts in two ways
 -   Greater variance (dispersion) and serial correlation
+-   The chance that a random set of counts has a greater dispersion
 
 ```{r}
 #| echo: true
@@ -125,10 +154,12 @@ for(i in 1:10000){
   H <- rpois(n = 172, lambda = 5.55)
   Ratio <- c(Ratio, var(H)/mean(H)) 
 }
-sum(Ratio > 1.22) / 10000
+sum(Ratio > 1.22) / 10000 * 100
 ```
 
 ##
+
+-   Does the count in one year tell you anything about the count in the next year? Autocorrelation
 
 ```{r}
 #| echo: true
@@ -138,15 +169,18 @@ Counts.df$H |>
 
 ##
 
+-   How does the autocorrelation compare with a random set of counts?
+
 ```{r}
 #| echo: true
 rpois(n = 172, lambda = 5.55) |>
   acf()
 ```
 
-##
+## {.smaller}
 
 -   Change over the years in the number of hurricanes
+-   Observed vs modeled
 
 ```{r}
 #| echo: true
@@ -168,7 +202,7 @@ ggplot(data = df,
 lm(H ~ Year, data = Counts.df)
 ```
 
--- An increase of .015 hurricanes per year or .015 * 172 = 2.6 more hurricanes on average today than in 1851
+-   An increase of .015 hurricanes per year or .015 * 172 = 2.6 more hurricanes on average today than in 1851
 
 ## Major hurricanes
 
@@ -185,7 +219,19 @@ Counts.df |>
 
 ##
 
--   Change over the years in the number of major hurricanes
+-   Distribution of the number of major hurricanes by year
+
+```{r}
+#| echo: true
+ggplot(data = Counts.df,
+       mapping = aes(x = MH)) +
+  geom_bar(color = "gray") +
+  scale_x_continuous(breaks = 0:8)
+```
+
+##
+
+-   Change in the number of major hurricanes over the years
 
 ```{r}
 #| echo: true
@@ -209,8 +255,9 @@ glm(MH ~ Year, data = Counts.df, family = poisson)
 
 .0074 or .74% increase per year. Over 172 years and starting with 1 MH in 1851 you compute 1 * (1 + .00745)^172 = 3.6 MH in 2022
 
-## Seasonal prediction model
+## 
 
+-   How well can hurricane counts be predicted from ocean temperature and ENSO?
 -   Get the data (annual hurricane counts, SST, ENSO) and collate the observations
 -   <https://psl.noaa.gov/data/climateindices/list/>
 
@@ -230,12 +277,16 @@ df <- data.frame(Year = Counts.df$Year,
 
 ##
 
--   Poisson regression
+-   Poisson regression model
 
 ```{r}
 #| echo: true
-model <- glm(H ~ SST + ENSO, data = df, family = poisson)
+model <- glm(H ~ SST + ENSO, 
+             data = df,
+             family = poisson)
 ```
+
+-   Prediction grid
 
 ```{r}
 #| echo: true
@@ -255,15 +306,19 @@ ggplot(data = grd,
         theme_minimal()
 ```
 
-## Annual U.S. counts
+## 
 
-```{r}
-Counts.df <- readr::read_table(file = here::here("data", "CONUS_Counts.txt"),
-                              show_col_types = FALSE)
+-   Your turn
+-   Annual U.S. counts
+
+```{r, message=FALSE}
+Counts.df <- readr::read_table(file = here::here("data", "CONUS_Counts.txt"))
 
 Counts.df |>
   head()
 ```
 
 -   Total (`CONUS`), major (`MUS`), Gulf (`G`), Florida (`FL`), East Coast (`E`)
--   Lab 4
+
+-   Write code to determine the average number of Gulf hurricanes per year
+-   Write code to determine what year had the most Florida hurricanes

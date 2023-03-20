@@ -12,30 +12,83 @@ editor: source
 
 ##
 
--   Climate changes (outside & inside factors)
--   Orbital cycles (Milankovitch cycles)
-    - The shape of Earth’s orbit: eccentricity
-    - The angle Earth’s axis is tilted with respect to Earth’s orbital plane: obliquity
-    - The direction Earth’s axis of rotation is pointed: precession
--   Volcanoes, solar intensity
--   Internal factors
-    - El Niño
+-   The climate is constantly changing being pushed from outside as well as from inside
+-   Orbital changes, volcanoes, solar activity
+-   El Niño and other internal oscillations
 
-## 
+##
 
--   How El Niño works
+-   Centuries to millennium
+    - Orbital changes (Milankovitch cycles)
+    - Shape of Earth’s orbit: eccentricity (100K)
+    - Angle at which Earth’s axis is tilted with respect to Earth’s orbital plane: obliquity (41K)
+    - Direction Earth’s axis of rotation is pointed: precession (26K)
+    
+##
+
+-   Months to years
+    - Large volcano eruptions: first cool, then warm
+
+{{< video https://www.youtube.com/embed/7zoycrMusK4 >}} 2 minutes
+
+  - Superposed epoch method
+
+## {.smaller}
+
+-   Changes to the sun
+-   Times of maximum sunspot activity are times with more energy output from the sun (mostly ultraviolet) 
+
+{{< video https://www.youtube.com/embed/wWIh3PvQscQ >}} 5 minutes
+
+-   Solar changes and hurricanes in the Caribbean <https://myweb.fsu.edu/jelsner/PDF/Research/ElsnerJagger2008.pdf>
+
+## {.smaller}
+
+-   Daily sunspot counts from <https://www.sidc.be/silso/datafiles#total>
+-   Data are in the file `Sunspots.txt` in your directory `data`
+-   Get the values into your R session environment as a data frame called `ssn.df` using the `read_table()` function from the {readr} package
+
+```{r, message=FALSE}
+#| echo: true
+ssn.df <- readr::read_table(file = here::here("data", "Sunspots.txt"),
+                            col_names = c("Year", "Month", "Day", "YearF", 
+                                          "SSN", "SSN_error", "Nobs", "X")) |>
+  dplyr::filter(Year >= 1950, Year <= 2021)
+```
+
+##
+
+-   Create a time series plot of daily sunspot numbers
+
+```{r}
+#| echo: true
+ssn.df <- ssn.df |>
+  dplyr::mutate(Date = as.Date(paste0(Year, "-", Month, "-", Day)))
+
+library(ggplot2)
+
+ggplot(data = ssn.df,
+       mapping = aes(x = Date, y = SSN)) +
+  geom_line() +
+  geom_smooth(span = .05, method = "loess")
+```
+
+
+##
+
+-   El Niño is part of an internal climate swing 
 
 {{< video https://www.youtube.com/embed/WPA-KpldDVc >}} 4 minutes
 
 ##
 
 -   The Ocean Niño Index (ONI) tracks the development and intensity of El Niño using ocean temperatures across the east tropical Pacific
--   It is a three-month average sea-surface temperature anomalies (relative to 1961-1990) in degrees Celsius for an area in the east tropical Pacific
--   Large positive values indicate the occurrence of El Niño, large negative values indicate the occurrence of La Niña
+-   It is the three-month average sea-surface temperature anomaly (relative to 1961-1990) in degrees Celsius for an area in the east tropical Pacific
+-   Large positive values of the ONI indicate the occurrence of El Niño, large negative values indicate the occurrence of La Niña
 
-## 
+##
 
--   Values of the ONI are in your file `ONI.csv` in your directory `data`
+-   Monthly values of the ONI are in your file `ONI.csv` in your directory `data`
 -   Get the values into your R session environment as a data frame called `oni.df` using the `read_csv()` function from the {readr} package
 
 ```{r, message=FALSE}
@@ -44,7 +97,9 @@ oni.df <- readr::read_csv(here::here("data", "ONI.csv"))
 oni.df
 ```
 
--   Add a date column in `oni.df` using the `as.Date()` function combining the `Year` and `Month` columns
+##
+
+-   Add a date column called `Date` in `oni.df` using the `as.Date()` function combining the `Year` and `Month` columns
 
 ```{r}
 #| echo: true
@@ -56,12 +111,11 @@ oni.df
 
 ## 
 
--   Make a time-series plot. Add horizontal lines corresponding to values greater than 2 and less than -1.5
+-   Make a time-series plot. Add lines corresponding to values greater than 2 and less than -1.5
 
-```{r}
+```{r, message=FALSE}
 #| echo: true
 #| output-location: slide
-library(ggplot2)
 
 ggplot(data = oni.df,
        mapping = aes(x = Date, y = ONI_C)) +
@@ -71,28 +125,50 @@ ggplot(data = oni.df,
   theme_minimal()
 ```
 
--   Values above 1°C indicate moderate El Niño months and values above 2°C indicate strong El Niño months
--   Note the trend toward stronger El Ninos
+-   Values above 1°C indicate moderate El Niño conditions and values above 2°C indicate strong El Niño conditions
+-   Note the upward trend toward even stronger El Niño conditions
+
+##
+
+-   Plot the upward trend in the strong El Niño conditions with the `geom_quantiles()` function setting `quantiles = .99`
+
+```{r, message=FALSE}
+#| echo: true
+ggplot(data = oni.df,
+       mapping = aes(x = Date, y = ONI_C)) +
+  geom_line() +
+  geom_quantile(quantiles = .99) +
+  labs(x = "Year", y = "ONI (°C)") +
+  theme_minimal()
+
+```
+
 
 ## {.smaller}
 
 -   The Southern Oscillation Index (SOI) tracks the development and intensity of El Niño using air pressure
+-   El Niño - Southern Oscillation (ENSO)
 -   The SOI is calculated from the monthly fluctuations in the air pressure between the island of Tahiti and the city of Darwin in Australia
 -   Sustained negative values of the SOI indicate El Niño episodes
 
 ```{r}
-#| echo: true
 r <- terra::rast()
 terra::values(r) <- 0
 tmap::tmap_mode("view")
 tmap::tm_shape(r) + tmap::tm_raster(alpha = .1)
 ```
 
-## 
+## {.smaller}
 
 -   The SOI is a *standardized anomaly* of the mean sea level pressure difference. The averaging (base) period is the 60 years (1933--1992)
 
--   For each month $j = 1,2, \ldots, 12$ and each year $i = 1, \ldots, N$ let $\Delta_{i,j}$ = $P_{Tahiti} - P_{Darwin}$, then the SOI for year $i$ and month $j$ is
+-   For each month $j = 1,2, \ldots, 12$ and each year $i = 1, \ldots, N$ let
+
+$$
+\Delta_{i,j} = P_{Tahiti} - P_{Darwin}
+$$
+
+then the SOI for year $i$ and month $j$ is
 
 $$
 \hbox{SOI}_{i,j} = 10\times\frac{\Delta_{i,j} - \bar{\Delta_j}}{\hbox{sd}(\Delta_j)}
@@ -103,7 +179,7 @@ where $\bar{\Delta_j}$ is the 60-year average pressure difference for month $j$ 
 ## 
 
 -   Data source: <http://www.bom.gov.au/climate/enso/soi_monthly.txt>
--   Get the data into your R session
+-   Get the data into your R session and create a `Date` column
 
 ```{r}
 #| echo: true
@@ -127,7 +203,7 @@ ggplot(data = soi.df,
 
 ## 
 
--   Use the `left_join()` function to create a new data frame containing both the ONI and SOI for the months that have both values
+-   Use the `dplyr::left_join()` function to create a new data frame containing both the ONI and SOI for the months that have both values
 
 ```{r}
 #| echo: true
@@ -136,7 +212,8 @@ df <- oni.df |>
   dplyr::select(Date, ONI_C, SOI_times10sd) |>
   na.omit()
 
-head(df)
+df |>
+  head()
 ```
 
 ## 
@@ -163,10 +240,17 @@ ggplot(data = df,
   theme_minimal()
 ```
 
+## 
+
+-   More information about El Niño
+
+<https://www.metoffice.gov.uk/research/climate/seasonal-to-decadal/gpc-outlooks/el-nino-la-nina/enso-description>
+
 ##
 
 -   Tropical North Atlantic SST <https://psl.noaa.gov/data/climateindices/list/>
--   In the file `data/TNA_SST.txt`
+-   In the file `TNA_SST.txt` in directory `data`
+-   Get the data into your R session and make a plot
 
 ```{r}
 #| echo: true
@@ -175,53 +259,18 @@ TNA.df <- readr::read_table(file = here::here("data", "TNA_SST.txt"))
 
 ggplot(data = TNA.df,
        mapping = aes(x = Year, y = Aug)) +
-  geom_line() +
+  geom_line() + 
+  geom_smooth() +
   labs(y = "°C")
 ```
 
 
 ## 
 
--   More information <https://www.metoffice.gov.uk/research/climate/seasonal-to-decadal/gpc-outlooks/el-nino-la-nina/enso-description>
-
-## North Atlantic Oscillation
+-   North Atlantic Oscillation
 
 {{< video https://www.youtube.com/embed/KOYJG7j4Iy8 >}} 3 minutes
 
-## Pacific Decadal Oscillation
+-   Pacific Decadal Oscillation
 
 {{< video https://www.youtube.com/embed/Sc3tOEcM0YE >}} 3 minutes
-
-## Solar Cycle
-
--   Sunspot numbers <https://www.sidc.be/silso/datafiles#total>
--   Get the data into your R session
-
-```{r}
-#| echo: true
-ssn.df <- readr::read_table(file = here::here("data", "Sunspots.txt"),
-                            col_names = c("Year", "Month", "Day", "YearF", 
-                                          "SSN", "SSN_error", "Nobs", "X")) |>
-  dplyr::filter(Year >= 1950, Year <= 2021)
-```
-
-##
-
--   Create a time series plot
-
-```{r}
-#| echo: true
-ssn.df <- ssn.df |>
-  dplyr::mutate(Date = as.Date(paste0(Year, "-", Month, "-", Day)))
-
-ggplot(data = ssn.df,
-       mapping = aes(x = Date, y = SSN)) +
-  geom_line() +
-  geom_smooth(span = .05, method = "loess")
-```
-
-## 
-
--   Experts at FSU discuss the relationship between hurricanes and El Niño
-
-{{< video https://www.youtube.com/embed/Z41VCN5phTM >}} 21 minutes
