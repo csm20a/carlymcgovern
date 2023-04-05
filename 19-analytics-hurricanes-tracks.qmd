@@ -10,48 +10,70 @@ editor_options:
   chunk_output_type: console
 ---
 
-##
+## 
 
-![Map showing the tracks and intensities of all the tropical cyclones over the North Atlantic basin during a hurricane season](https://www.nhc.noaa.gov/data/tracks/tracks-at-2020.png)
-
-## Accumulated cyclone energy
-
--   Accumulated cyclone energy (ACE) is a measure of energy in a tropical cyclone 
--   It is calculating by summing the square of a TC's maximum sustained winds ($w$), measured (estimated) every six hours
--   It is multiplied by .0001 to make it more manageable
--   $\text{ACE} = .0001 \times\sum w^2$
--   Summing ACE across each tropical cyclone throughout a season is a measure of total season activity
+-   Accumulated cyclone energy
+-   Mapping hurricane tracks
+-   Shifting storminess
+-   Wind field model
 
 ## 
 
--   Per season ACE values are available from the {hockeystick} package
+![Map showing the tracks and intensities of all the tropical cyclones over the North Atlantic basin during a hurricane season](https://www.nhc.noaa.gov/data/tracks/tracks-at-2020.png)
+
+## Accumulated cyclone energy (ACE)
+
+-   Accumulated cyclone energy (ACE) is a measure of energy in a tropical cyclone
+-   It is the sum of the maximum sustained wind speed ($w$) squared, when the wind speeds are estimated every six hours
+-   It is multiplied by .0001 and expressed in knots squared $kn^2$
+-   $\text{ACE} = .0001 \times\sum w^2$
+-   Summing ACE over all tropical cyclones in a season gives a measure of seasonal hurricane activity
+
+## 
+
+-   Per season (or per year) ACE values are available from the {hockeystick} package
 
 ```{r}
 #| echo: true
-
 library(hockeystick)
 library(ggplot2)
 
 Counts.df <- get_hurricanes()
+```
 
+-   Click on the `Counts.df` in your Environment
+-   'Revised' indicates reanalysis efforts
+-   Compute the seasonal average and seasonal range of ACE
+
+##  {.smaller}
+
+-   Make a time series graph
+
+```{r}
+#| echo: true
 Counts.df |>
   plot_hurricane_nrg()
 ```
 
 ## 
--   Decrease the span on the smoother (default is .75)
+
+-   Decrease the amount of smoothing by lowering the value of the argument `span =` to .5 (default is .75). Change the line color
 
 ```{r}
 #| echo: true
 Counts.df |>
   plot_hurricane_nrg() +
-  ggplot2::geom_smooth(span = .5, col = "green")
+  ggplot2::geom_smooth(span = .5, 
+                       col = "green")
 ```
 
-## Per hurricane data
+-   Multi-decadal oscillations
 
--   The National Hurricane Center keeps data on all observations of tropical cyclones occurring in the North Atlantic and western North Pacific. These data are available [here](https://www.nhc.noaa.gov/data/)
--   The International Best-Track Archive for Climate Stewardship has historical tropical cyclone data from around the world in CSV, shapefiles, and netCDF formats. These data are [here](https://www.ncei.noaa.gov/data/international-best-track-archive-for-climate-stewardship-ibtracs/v04r00/access)
+## 
+
+-   Per hurricane data
+-   The National Hurricane Center keeps data on all observations of tropical cyclones occurring in the North Atlantic and western North Pacific. These data are available here <https://www.nhc.noaa.gov/data/>
+-   The International Best-Track Archive for Climate Stewardship has historical tropical cyclone data from around the world in CSV, shapefiles, and netCDF formats. These data are available here <https://www.ncei.noaa.gov/data/international-best-track-archive-for-climate-stewardship-ibtracs/v04r00/access>
 -   Select the `shapefile/` directory
 
 ## 
@@ -60,13 +82,13 @@ Here you will
 
 1.  Download and unzip the file
 2.  Get the data into R as a data frame
-3.  Glimpse the contents of the data frame
-4.  Filter removing all observations except those from Hurricane Michael (2018)
-5.  Create a map showing Michael's track
+3.  Check the contents of the data frame
+4.  Remove all observations except those from Hurricane Michael (2018)
+5.  Create a map showing the hurricane track
 
 ## 
 
--   Download and unzip the shapefile (lines geometry) 
+-   Download and unzip the shapefile (lines geometry)
 
 ```{r}
 #| echo: true
@@ -81,11 +103,12 @@ unzip(here::here("data", "IBTrACS.NA.list.v04r00.lines.zip"),
 }
 ```
 
--- Line 3 checks to see if the file is already in your `data` directory. If so then skip the download and unzip
+-   The `if()` function checks to see if the file is already in your `data` directory. If not, then it downloads and unzips the file
 
 ## 
 
--   Get the data file from the `data` directory into R as a data frame
+-   Get the data file from the `data` directory into your current R session as a data frame
+-   This is done with the `st_read()` function from the {sf} package
 
 ```{r}
 #| echo: true
@@ -93,10 +116,9 @@ Tracks.sf <- sf::st_read(dsn = here::here("data"),
                          layer = "IBTrACS.NA.list.v04r00.lines")
 ```
 
-## {.smaller}
+##  {.smaller}
 
--   Glimpse the contents of the data frame
--   Each row is a separate three-hourly observation
+-   Check the contents of the data frame
 
 ```{r}
 #| echo: true
@@ -104,17 +126,18 @@ Tracks.sf |>
   dplyr::glimpse()
 ```
 
+-   Each row is a successive three-hourly observation
+
 ## Hurricane Michael (2018) {.smaller}
 
--   Hurricane Michael was a powerful and destructive tropical cyclone that became the first Category 5 hurricane to make landfall in the contiguous United States since Andrew in 1992
--   It was the third-most intense Atlantic hurricane to make landfall in the contiguous United States in terms of pressure, behind the 1935 Labor Day hurricane and Hurricane Camille in 1969
--   It was the first Category 5 hurricane on record to impact the Florida Panhandle, the fourth-strongest landfalling hurricane in the contiguous United States, in terms of wind speed, and the most intense hurricane on record to strike the United States in the month of October [^1]
+-   Hurricane Michael was a powerful and destructive tropical cyclone that became the first Category 5 hurricane to make landfall in the United States since Andrew in 1992
+-   It was the third-most intense Atlantic hurricane to make landfall in terms of pressure, behind the 1935 Labor Day hurricane and Hurricane Camille in 1969
+-   It was the first Category 5 hurricane on record to impact the Florida Panhandle, the fourth-strongest, in terms of wind speed, and the most intense hurricane to strike in the month of October
 
-[^1]: [Read more](https://en.wikipedia.org/wiki/Hurricane_Michael).
+##  {.smaller}
 
-## 
-
--   Here you remove all rows from `Track.sf` except those corresponding to Hurricane Michael in 2018
+-   Here you remove all rows from your data frame `Track.sf` except those corresponding to Hurricane Michael in 2018
+-   Since tropical cyclone names are recycled every six years, you need to filter on `SEASON` and `NAME`
 
 ```{r}
 #| echo: true
@@ -124,7 +147,7 @@ Michael_Track.sf <- Tracks.sf |>
 ```
 
 -   You've removed all rows from `TC.sf` and all columns except `NAME` and `USA_WIND`
--   So the new data `One.sf` contains `r nrow(Michael2018.sf)` rows and `r ncol(Michael2018.sf)` columns
+-   So the new data `Michael_Track.sf` contains 73 rows (observations) and 3 columns (variables)
 
 ```{r}
 #| echo: true
@@ -144,9 +167,11 @@ tmap::tm_shape(Michael_Track.sf) +
   tmap::tm_lines(col = "USA_WIND", lwd = 3)
 ```
 
-##
+-   Zoom and change the base tiles
 
--   Compute the ACE for Hurricane Michael
+## 
+
+-   Compute ACE for Hurricane Michael
 
 ```{r}
 #| echo: true
@@ -155,10 +180,12 @@ Michael_Track.sf |>
   dplyr::summarize(ACE = .0001 * sum(USA_WIND^2))
 ```
 
-##
+-   37.7 ACE units, 100 is a typical season average
 
--   Map all tracks from 2022
--   Filter and select
+## 
+
+-   Map all tracks from 2022. Start by creating a new data frame `Tracks2002.sf`
+-   Filter on `SEASON` and then select `NAME` and `USA_WIND`
 
 ```{r}
 #| echo: true
@@ -167,7 +194,7 @@ Tracks2022.sf <- Tracks.sf |>
   dplyr::select(NAME, USA_WIND)
 ```
 
-##
+## 
 
 -   Create the map
 
@@ -178,7 +205,7 @@ tmap::tm_shape(Tracks2022.sf) +
   tmap::tm_lines(col = "USA_WIND", lwd = 3)
 ```
 
-## {.smaller}
+##  {.smaller}
 
 -   Seasonal ACE and percentage by cyclone
 
@@ -192,9 +219,10 @@ Tracks2022.sf |>
   dplyr::arrange(desc(ACEp))
 ```
 
-##
+## 
 
--   10.1038/nature13278
+-   Shifting storminess
+-   <https://www.nature.com/articles/nature13278>
 -   Keep only observations with winds at or exceeding 64 kn since 1950
 
 ```{r}
@@ -205,7 +233,7 @@ Hurricane_Obs.df <- Tracks.sf |>
   dplyr::select(year, USA_WIND, NAME, LAT, LON)
 ```
 
-##
+## 
 
 ```{r}
 #| echo: true
@@ -219,12 +247,12 @@ Hurricane_Obs.df |>
   dplyr::summarize(AvgLATmax = mean(LATmax),
                    AvgLONmax = mean(LONmax),
                    nS = dplyr::n()) |>
-ggplot(mapping = aes(x = year, y = AvgLATmax, weight = nS)) +
+ggplot(mapping = aes(x = year, y = AvgLATmax)) +
   geom_point() + 
   geom_smooth(method = lm)
 ```
 
-##
+## 
 
 Western Pacific typhoons
 
@@ -241,7 +269,7 @@ unzip(here::here("data", "IBTrACS.WP.list.v04r00.lines.zip"),
 }
 ```
 
-##
+## 
 
 ```{r}
 #| echo: true
@@ -258,7 +286,7 @@ sf::st_read(dsn = here::here("data"),
   dplyr::group_by(year) |>
   dplyr::summarize(AvgLATmax = mean(LATmax),
                    AvgLONmax = mean(LONmax)) |>
-ggplot(mapping = aes(x = year, y = AvgLONmax)) +
+ggplot(mapping = aes(x = year, y = AvgLATmax)) +
   geom_point() +
   geom_smooth(method = lm)
 ```
@@ -278,7 +306,7 @@ fetch_best_tracks_data(path,
                        src = "https://www.nhc.noaa.gov/data/hurdat/hurdat2-1851-2021-100522.txt")
 ```
 
-##
+## 
 
 -   Load the data for Hurricane Michael (2018, ID = AL142018) as a simple feature data frame with CRS UTM16 (EPSG 32616)
 
@@ -296,7 +324,7 @@ library(terra)
 data("geographic")
 ```
 
-##
+## 
 
 -   Create raster of winds. This takes a long time
 
@@ -307,12 +335,9 @@ Wind.r <- hurrecon_run(Michael_Track.sf,
 plot(land)
 plot(Wind.r, add = TRUE)
 plot(land, add = TRUE)
-
-library(tidyraster)
-ggplot() + geom_spatraster(data = Wind.r)
 ```
 
-## {.smaller}
+##  {.smaller}
 
 -   Include only track observations when the track is within 500 km of a location
 
@@ -332,9 +357,9 @@ colnames(Michael_Track2.sf)[11:22] <- colnames(Michael_Track.sf)[11:22]
 Wind.r2 <- hurrecon_run(Michael_Track2.sf, 
                         max_rad_km = 100, res_m = 5000, max_interp_dist_km = 5)
 
-ggplot() + geom_spatraster(data = Wind.r2)
-
 tmap::tmap_mode("view")
 tmap::tm_shape(Wind.r2) +
-  tmap::tm_raster(alpha = .3)
+  tmap::tm_raster(alpha = .5) +
+  tmap::tm_shape(Michael_Track.sf) +
+    tmap::tm_dots()
 ```
